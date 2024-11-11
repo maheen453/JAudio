@@ -1,268 +1,270 @@
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.util.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
 
 // Simulation of audio content in an online store
 // The songs, podcasts, audiobooks listed here can be "downloaded" to your library
 
-public class AudioContentStore
-{
-	private ArrayList<AudioContent> contents; 
-	private Map<String, Integer> byTitle;
-	private Map<String, ArrayList<Integer> > byartist;
-	private Map<Song.Genre, ArrayList<Integer>> byGenre; 
+public class AudioContentStore {
+	private ArrayList<AudioContent> contents;
+	// create three maps for searching title, artists and genre
+	private HashMap<String, Integer> byTitle;
+	private HashMap<String, ArrayList<Integer>> byArtist;
+	private HashMap<String, ArrayList<Integer>> byGenre;
 
-	public AudioContentStore()
-	{
+	public AudioContentStore() {
+		
 		byTitle = new HashMap<String, Integer>();
-		byartist = new HashMap<String, ArrayList<Integer> >();
-		byGenre = new HashMap<Song.Genre, ArrayList<Integer> >();
+		byArtist = new HashMap<String, ArrayList<Integer>>();
+		byGenre = new HashMap<String, ArrayList<Integer>>();
+		contents = new ArrayList<AudioContent>();
+		// calling methods
+		fillContents("store.txt");
+		fillArtists();
+		fillGenres();
+		fillTitles();
 
-		try{
-			contents = readContent();
-		}catch(IOException exception){
-			System.out.println(exception.getMessage());
-			System.exit(1);
-		}
-
-		//Title
-		for(int i=0;i<contents.size();i++){
-			byTitle.put(contents.get(i).getTitle(), i);
-		}
-
-		//Artist
-		for(int i=0;i<contents.size();i++){
-			ArrayList<Integer> index = new ArrayList<Integer>();
-			if(contents.get(i).getType().equalsIgnoreCase("SONG")){
-				Song song = (Song)contents.get(i);
-				if(byartist.containsKey(song.getArtist())){
-					index = byartist.get(song.getArtist());
-					index.add(i);
-				}else{
-					index.add(i);
-					byartist.put(song.getArtist(), index);
-				}
-			}
-
-			if(contents.get(i).getType().equalsIgnoreCase("AUDIOBOOK")){
-				AudioBook a = (AudioBook)contents.get(i);
-				if(byartist.containsKey(a.getAuthor())){
-					index = byartist.get(a.getAuthor());
-					index.add(i);
-				}else{
-					index.add(i);
-					byartist.put(a.getAuthor(), index);
-				}
-			}
-		}
-
-		//Genre
-		for(int i=0;i<contents.size();i++){
-			ArrayList<Integer> num = new ArrayList<Integer>();
-			if(contents.get(i).getType().equalsIgnoreCase("SONG")){
-				Song song = (Song)contents.get(i);
-			for(Song.Genre g: Song.Genre.values()){
-				if(song.getGenre() == g){
-					if(byGenre.containsKey(g)){
-						num = byGenre.get(g);
-						num.add(i);
-					}else{
-						num.add(i);
-						byGenre.put(g, num);
-					}
-				}
-			}
-		}
-	}	
 	}
 
-	private ArrayList<AudioContent> readContent() throws IOException
-	{
-		ArrayList<AudioContent> content = new ArrayList<AudioContent>();
-		Scanner in = new Scanner(new File("store.txt"));
-		//strings id, title, year, length, artist, composer, genre. 
-		while(in.hasNextLine()){
-			String type = in.nextLine();
-			if(type.equalsIgnoreCase("SONG")){
+		private void fillContents(String filename) {
+		// for file io exception
+		try {
+			Scanner in = new Scanner(new File(filename));
+			while (in.hasNextLine()) {
+				// storting general information for audiocontents
+				String contentType = in.nextLine();
 				String id = in.nextLine();
 				String title = in.nextLine();
+
 				int year = in.nextInt();
 				int length = in.nextInt();
 				in.nextLine();
+
 				String artist = in.nextLine();
 				String composer = in.nextLine();
-				String g = in.nextLine();
-				int lines = in.nextInt();
-				in.nextLine();
-				String lyrics = "";
-				for(int i=0;i<lines;i++){
-					String line = in.nextLine();
-					lyrics += line + "\n";
-				}
-				switch(g){
-					case "POP" : 
-					Song song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.POP, lyrics);
-					content.add(song); break;
-					case "ROCK" : 
-					song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.ROCK, lyrics);
-					content.add(song); break;
-					case "JAZZ" : 
-					song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.JAZZ, lyrics);
-					content.add(song); break;
-					case "HIPHOP" : 
-					song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.HIPHOP, lyrics);
-					content.add(song); break;
-					case "RAP" : 
-					song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.RAP, lyrics);
-					content.add(song); break;
-					case "CLASSICAL" : 
-					song = new Song(title, year, id, type, lyrics, length, artist, composer, Song.Genre.CLASSICAL, lyrics);
-					content.add(song); break;
-					default : break;
-				}	
-			}
-			else if(type.equalsIgnoreCase("AUDIOBOOK")){
-				String id = in.nextLine();
-				String title = in.nextLine();
-				int year = in.nextInt();
-				int length = in.nextInt();
-				in.nextLine();
-				String author = in.nextLine();
-				String narrator = in.nextLine();
-				int numOfChapters = in.nextInt();
-				in.nextLine();
-				ArrayList<String> chapterTitles = new ArrayList<>();
-				ArrayList<String> chapters = new ArrayList<>();
-				for(int i=0;i<numOfChapters;i++){
-					String chapter = in.nextLine();
-					chapterTitles.add(chapter);
-				}
-				for(int i=0;i<numOfChapters;i++){
-					int numOfLines = in.nextInt();
-					in.nextLine();
-					String lines = ""; 
-					for(int j=0;j<numOfLines;j++){
-						lines += in.nextLine() + "\n";
+				if (contentType.equalsIgnoreCase("SONG")) {
+					String genre = in.nextLine();
+					Song.Genre realGenre = null;
+					switch (genre) {
+						case "POP":
+							realGenre = Song.Genre.POP;
+							break;
+						case "ROCK":
+							realGenre = Song.Genre.ROCK;
+							break;
+						case "JAZZ":
+							realGenre = Song.Genre.JAZZ;
+							break;
+						case "CLASSICAL":
+							realGenre = Song.Genre.CLASSICAL;
+							break;
+						case "HIPHOP":
+							realGenre = Song.Genre.HIPHOP;
+							break;
+						case "RAP":
+							realGenre = Song.Genre.RAP;
+							break;
 					}
-					chapters.add(lines);
+					//getting lyrics
+					int lines = in.nextInt();
+					String music = "";
+					for (int i = 0; i <= lines; i++) {
+						music += in.nextLine() + "\n";
+					}
+					// adding song content and creating song object
+					contents.add(
+							new Song(title, year, id, contentType, music, length, artist, composer, realGenre, music));
 				}
-				AudioBook audioBook = new AudioBook(title, year, id, type, "", length, author, narrator, chapterTitles, chapters);
-				content.add(audioBook);
+
+				else if (contentType.equalsIgnoreCase("AUDIOBOOK")) {
+					int numTitles = in.nextInt();
+					in.nextLine();
+					ArrayList<String> chapters = new ArrayList<String>();
+					ArrayList<String> chaptersTitles = new ArrayList<String>();
+					for (int i = 0; i < numTitles; i++) {
+						chaptersTitles.add(in.nextLine());
+					}
+					String contentText = "";
+
+					for (int i = 0; i < numTitles; i++) {
+						int numLines = in.nextInt();
+						in.nextLine();
+
+						for (int j = 0; j < numLines; j++) {
+
+							contentText += in.nextLine();
+
+						}
+						chapters.add(contentText);
+						contentText = "";
+
+					}
+					contents.add(new AudioBook(title, year, id, contentType, "", length, artist, composer,
+							chaptersTitles, chapters));
+				}
+			}
+			in.close();
+		}
+
+		catch (FileNotFoundException e) {
+			System.out.println(filename + " Not Found");
+		}
+
+	}
+
+
+	private void fillArtists() {
+		ArrayList<Integer> numArtists = new ArrayList<Integer>();
+		String name = "";
+		for (int i = 0; i < contents.size(); i++) {
+			if (contents.get(i).getType().equalsIgnoreCase("SONG")) {
+				Song s = (Song) contents.get(i);
+				name = s.getArtist();
+				// add song index
+				numArtists.add(i + 1);
+			}
+			// same as above but for audiobook
+			else if (contents.get(i).getType().equalsIgnoreCase("AUDIOBOOK")) {
+				AudioBook a = (AudioBook) contents.get(i);
+				name = a.getAuthor();
+				numArtists.add(i + 1);
+			}
+			// checks if the artist name is already in hashmap
+			if (!byArtist.containsKey(name)) {
+				// puts name and song indexes into hashmap
+				byArtist.put(name, numArtists);
+			} else {
+				// adding song num if artist already in hashmap
+				numArtists = byArtist.get(name);
+				numArtists.add(i + 1);
+				byArtist.put(name, numArtists);
+			}
+			// reset index nums list
+			numArtists = new ArrayList<Integer>();
+		}
+	}
+
+
+	public void fillGenres() {
+		ArrayList<Integer> numGenre = new ArrayList<Integer>();
+		String genre = "";
+		for (int i = 0; i < contents.size(); i++) {
+			// only songs have genres
+			if (contents.get(i).getType().equalsIgnoreCase("SONG")) {
+				Song s = (Song) contents.get(i);
+				genre = s.getGenre().toString();
+				numGenre.add(i + 1);
+				if (!byGenre.containsKey(genre)) {
+					byGenre.put(genre, numGenre);
+				} else {
+					numGenre = byGenre.get(genre);
+					numGenre.add(i + 1);
+					byGenre.put(genre, numGenre);
+				}
+			}
+			numGenre = new ArrayList<Integer>();
+		}
+	}
+
+
+	private void fillTitles() {
+		String title = "";
+		int num = 0;
+		for (int i = 0; i < contents.size(); i++) {
+			// check for song
+			if (contents.get(i).getType().equalsIgnoreCase("SONG")) {
+				// creates song, gets title and index
+				Song s = (Song) contents.get(i);
+				title = s.getTitle();
+				num = i + 1;
+			}
+			// same as above but for audiobook
+			else if (contents.get(i).getType().equalsIgnoreCase("AUDIOBOOK")) {
+				AudioBook a = (AudioBook) contents.get(i);
+				title = a.getTitle();
+				num = i + 1;
+			}
+			// checks if the title is not already downloaded, and adds to the hashmap
+			if (!byTitle.containsKey(title)) {
+				byTitle.put(title, num);
 			}
 		}
-		return content;
 	}
-	public AudioContent getContent(int index)
-	{
-		if (index < 1 || index > contents.size())
-		{
-			return null;
+
+	public void printGenreSongs(String genre) {
+		//if content does not exist
+		if (!byGenre.containsKey(genre)) {
+			throw new contentDNE(genre);
 		}
-		return contents.get(index-1);
-	}
-
-	public Map<String, Integer> getByTitle() {
-		return byTitle;
-	}
-
-	public Map<String, ArrayList<Integer>> getByartist() {
-		return byartist;
-	}
-
-	public Map<Song.Genre, ArrayList<Integer>> getByGenre() {
-		return byGenre;
-	}
-		
-	public void listAll()
-	{
-		for (int i = 0; i < contents.size(); i++)
-		{
-			int index = i + 1;
-			System.out.print("" + index + ". ");
-			contents.get(i).printInfo();
+		// gets int list for index of songs from genre
+		ArrayList<Integer> numGenre = byGenre.get(genre);
+		// loops and prints song info
+		for (int i = 0; i < numGenre.size(); i++) {
+			System.out.print((numGenre.get(i)) + ". ");
+			contents.get(numGenre.get(i) - 1).printInfo();
 			System.out.println();
 		}
 	}
 
-	public void search(String title){
-		if(byTitle.containsKey(title)){
-			for(String key : byTitle.keySet()){
-				if(key.equals(title)){
-					int index = byTitle.get(key);
-					System.out.print(index+1 + ". ");
-					contents.get(index).printInfo();
-				}
-			}
-		}else{
-			throw new NoMatchesException("No matches for "+ title);
+	public void printArtistSongs(String name) {
+		//if content does not exist
+		if (!byArtist.containsKey(name)) {
+			throw new contentDNE(name);
+		}
+		// list for index of songs from artist
+		ArrayList<Integer> numSongs = byArtist.get(name);
+		for (int i = 0; i < numSongs.size(); i++) {
+
+			System.out.print((numSongs.get(i)) + ". ");
+			contents.get(numSongs.get(i) - 1).printInfo();
+			System.out.println();
 		}
 	}
 
-	public ArrayList<Integer> searchA(String artist){
-		ArrayList<Integer> artists = new ArrayList<>();
-		if(byartist.containsKey(artist)){
-			for(String key : byartist.keySet()){
-				if(key.equals(artist)){
-					artists = byartist.get(key);
-				}
-			}
-		}else{
-			throw new NoMatchesException("No matches for "+ artist);
+	// prints out song based on given title
+	public void printContentTitle(String title) {
+		//if content does not exist
+		if (!byTitle.containsKey(title)) {
+			throw new contentDNE(title);
 		}
-		return artists;
+		// gets song index from titles
+		int numContent = byTitle.get(title);
+		// prints song info
+		System.out.print(numContent + ". ");
+		contents.get(numContent - 1).printInfo();
 	}
 
-	public ArrayList<Integer> searchG(Song.Genre genre){
-		ArrayList<Integer> sogns_genre = new ArrayList<>();
-		if(byGenre.containsKey(genre)){
-			for(Song.Genre key : byGenre.keySet()){
-				if(key == genre){
-					sogns_genre = byGenre.get(key);
-				}
-			}
-		}else{
-			throw new NoMatchesException("No matches for "+ genre);
+	public ArrayList<Integer> getArtistIndex(String name) {
+		// if content does not exist
+		if (!byArtist.containsKey(name)) {
+			throw new contentDNE(name);
 		}
-		return sogns_genre;
+		return byArtist.get(name);
 	}
 
-	public ArrayList<Integer> searchP(String partial){
-		ArrayList<Integer> matched_index = new ArrayList<Integer>();
-
-		for(int i=0;i<contents.size();i++){
-			if(contents.get(i).getType().equalsIgnoreCase("SONG")){
-				Song song = (Song)contents.get(i);
-
-				if(song.getArtist().contains(partial) || song.getAudioFile().contains(partial) || song.getTitle().contains(partial) || song.getComposer().contains(partial)){
-					matched_index.add(i);
-				}
-			}
-			if(contents.get(i).getType().equalsIgnoreCase("AUDIOBOOK")){
-				AudioBook audioBook = (AudioBook)contents.get(i);
-
-				if(audioBook.getAudioFile().contains(partial) || audioBook.getAuthor().contains(partial)){
-					matched_index.add(i);
-				}else{
-					for(int j=0;j<audioBook.getChapterTitles().size();j++){
-						if(audioBook.getChapterTitles().get(j).contains(partial) || audioBook.getChapters().get(j).contains(partial)){
-							matched_index.add(i);
-						}
-					}
-				}
-			}
+	public ArrayList<Integer> getGenreIndex(String genre) {
+		// if content does not exist
+		if (!byGenre.containsKey(genre)) {
+			throw new contentDNE(genre);
 		}
-		return matched_index;
+		return byGenre.get(genre);
+
 	}
 
-	public class NoMatchesException extends RuntimeException{
-		public NoMatchesException() {}
+	public AudioContent getContent(int index) {
+		if (index < 1 || index > contents.size()) {
+			return null;
+		}
+		return contents.get(index - 1);
+	}
 
-		public NoMatchesException(String message){
-			super(message);
+	public void listAll() {
+		for (int i = 0; i < contents.size(); i++) {
+			int index = i + 1;
+			System.out.print("" + index + ". ");
+			contents.get(i).printInfo();
+			System.out.println();
 		}
 	}
 }

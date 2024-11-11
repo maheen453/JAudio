@@ -79,6 +79,9 @@
 - **Sort by Length**: Order content by duration.
   - Commands: `sortbyyear`, `sortbyname`, `sortbylength`
 
+![image](https://github.com/user-attachments/assets/a3d70a16-4022-467e-9f05-06f4e9deb2ca)
+
+
 
 ## 🛠️ Object-Oriented Design
 ### Key OOP Concepts

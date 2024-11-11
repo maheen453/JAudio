@@ -10,7 +10,7 @@
 - **Display Stored Content, Songs, Audiobooks, Artists, Playlists**: View all available media content and playlists at a glance.
   - Commands: `store`, `songs`, `books`, `artists`, `playlists`
 
- ![image](https://github.com/user-attachments/assets/19ab4241-4381-4ba9-adc9-5f726ac7cc5f)
+![image](https://github.com/user-attachments/assets/19ab4241-4381-4ba9-adc9-5f726ac7cc5f)
 
 ### ⬇️ Audio Content Download
 - **Download by List Numbers**: Select and download multiple audio contents by specifying their numbers (e.g., download 4 to 7).
@@ -19,9 +19,7 @@
   - Commands: `download`, `downloada`, `downloadg`
 
 ![image](https://github.com/user-attachments/assets/f2c04add-99ba-4be9-934f-aa326007cdde)
-
 ![image](https://github.com/user-attachments/assets/e24043cb-765c-4570-bea0-2b93e73d8f10)
-
 ![image](https://github.com/user-attachments/assets/1837c5db-96ad-4e08-af14-4dbcaaa06b0f)
 
 ### 🔍 Search

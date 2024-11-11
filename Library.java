@@ -14,18 +14,12 @@ public class Library
 	// Public methods in this class set errorMesg string 
 	// Error Messages can be retrieved from main in class MyAudioUI by calling  getErrorMessage()
 	// In assignment 2 we will replace this with Java Exceptions
-	String errorMsg = "";
-	
-	public String getErrorMessage()
-	{
-		return errorMsg;
-	}
 
 	public Library()
 	{
-		songs 			= new ArrayList<Song>(); 
-		audiobooks 	= new ArrayList<AudioBook>(); ;
-		playlists   = new ArrayList<Playlist>();
+		songs = new ArrayList<Song>(); 
+		audiobooks = new ArrayList<AudioBook>(); ;
+		playlists = new ArrayList<Playlist>();
 	}
 	/*
 	 * Download audio content from the store. Since we have decided (design decision) to keep 3 separate lists in our library
@@ -37,61 +31,50 @@ public class Library
 	 * If it is already in a list, set the errorMsg string and return false. Otherwise add it to the list and return true
 	 * See the video
 	 */
-	public void download(AudioContent content)
-	{
-		if(content.getType() == Song.TYPENAME){ //checking the type of given content
-			for(int i=0;i<songs.size();i++){   //checking if the song is already in the songs arraylist
-				if(songs.get(i).equals(content)){
-					throw new AlreadyDownloaded("Song "+content.getTitle()+" already downloaded");
-				}
-			}
-			songs.add((Song)content);  //otherwise adding the content to songs arraylist by typecasting it to Song and returning true
-			System.out.println("SONG "+ content.getTitle() +" Added to Library");
+	public void download(AudioContent content) {
+		if (content == null) {
+			throw new contentDNE("this index");
 		}
 
-		if(content.getType() == AudioBook.TYPENAME){ //checking the type of given content
-			for(int i=0;i<audiobooks.size();i++){   //checking if the audiobook is already in the audiobooks arraylist  
-				if(audiobooks.get(i).equals(content)){
-					throw new AlreadyDownloaded("Audiobook "+content.getTitle()+" already downloaded");  //if the audiobook is in the audiobooks arraylist then setting the errormsg and returning false
-				}
+		if (content.getType().equals(Song.TYPENAME)) 
+		{
+			// cast content to song
+			Song s = (Song) content;
+			if (songs.contains(content)) {
+				throw new SongAlreadyDownloaded(s.getTitle());
+			} 
+			else {
+				songs.add(s);
 			}
-			audiobooks.add((AudioBook)content);  //otherwise adding the content to audiobooks arraylist by typecasting it to Audiobook and returning true
-			System.out.println("AUDIOBOOK "+ content.getTitle() +" Added to Library");
+		}
+		// follow same for audiobook
+		else if (content.getType().equals(AudioBook.TYPENAME)) {
+			AudioBook a = (AudioBook) content;
+			if (audiobooks.contains(content)) 
+			{
+				throw new AudiobookAlreadyDownloaded(a.getTitle());
+			}
+			else {
+				audiobooks.add(a);
+			}
 		}
 	}
 
-	public void downloadAG(AudioContent content){
-		if(content.getType() == Song.TYPENAME){ //checking the type of given content
-			for(Song s : songs){   //checking if the song is already in the songs arraylist
-				if(s.equals(content)){
-					throw new AlreadyDownloaded("Song "+content.getTitle()+" already downloaded");
-				}
-			}		
-			songs.add((Song)content);  //otherwise adding the content to songs arraylist by typecasting it to Song and returning true
-		}
-			
-		if(content.getType() == AudioBook.TYPENAME){ //checking the type of given content
-			for(AudioBook a : audiobooks){   //checking if the audiobook is already in the audiobooks arraylist  
-				if(a.equals(content)){
-					throw new AlreadyDownloaded("Audiobook "+content.getTitle()+" already downloaded");  //if the audiobook is in the audiobooks arraylist then setting the errormsg and returning false
-				}
-			}
-			audiobooks.add((AudioBook)content);  //otherwise adding the content to audiobooks arraylist by typecasting it to Audiobook and returning true
-		}
-	}
 
 	// Print Information (printInfo()) about all songs in the array list
-	public void listAllSongs()
+	// Print Information (printInfo()) about all songs in the array list
+	public void listAllSongs() 
 	{
-		for (int i = 0; i < songs.size(); i++)  //looping through every element of the songs arraylist and calling printInfo() method for each
+		// loops through songs and prints info
+		for (int i = 0; i < songs.size(); i++) 
 		{
 			int index = i + 1;
 			System.out.print("" + index + ". ");
 			songs.get(i).printInfo();
-			System.out.println();	
+			System.out.println();
 		}
 	}
-	
+
 	// Print Information (printInfo()) about all audiobooks in the array list
 	public void listAllAudioBooks()
 	{
@@ -137,22 +120,30 @@ public class Library
 
 	// Delete a song from the library (i.e. the songs list) - 
 	// also go through all playlists and remove it from any playlist as well if it is part of the playlist
-	public boolean deleteSong(int index)
-	{
-		for(int i=0;i<playlists.size();i++){ //using a nested loop to go through the playlists arraylist and the contents arraylist of each playlist 
-			for(int j=0;j<playlists.get(i).getContent().size();j++){
-				if(playlists.get(i).getContent().get(j).equals(songs.get(index-1))){ //checking if the song is in the playlist
-					playlists.get(i).deleteContent(index-1);  //if true then deleting the song from that playlist
+	public void deleteSong(int index) {
+		// checks for valid index
+		if (index < 1 || index > songs.size()) 
+		{
+		new contentDNE("this index");
+		}
+		// remove song inside dif playlists;
+		Playlist p = null;
+		// searches for song in different playlists
+		for (int i = 0; i < playlists.size(); i++) {
+			ArrayList<AudioContent> a = playlists.get(i).getContent();
+			for (int j = 0; j < a.size(); j++) 
+			{
+				if (a.get(j).equals(songs.get(index - 1))) 
+				{
+					p = playlists.get(i);
+					// deletes song playlist
+					p.deleteContent(j + 1);
 				}
 			}
 		}
-		if (index < 1 || index > songs.size()){ //checking if the index is valid for songs arraylist	
-			errorMsg = "Song Not Found"; //if not then setting the errormsg and returning false 
-			return false;
-		}
-		songs.remove(index-1);  //otherwise removing the song from songs list and returning true 
-		return true;
+		songs.remove(index - 1);
 	}
+
 	
   //Sort songs in library by year
 	public void sortSongsByYear()
@@ -161,65 +152,79 @@ public class Library
 		Collections.sort(songs,new SongYearComparator()); 
 	
 	}
-  // Write a class SongYearComparator that implements
+  	// Write a class SongYearComparator that implements
 	// the Comparator interface and compare two songs based on year
-	private class SongYearComparator implements Comparator<Song>
-	{
-		public int compare(Song a,Song b){  //comparing to songs by year
-			if(a.getYear()>b.getYear()) return 1;
-			else if(a.getYear()<b.getYear()) return -1;
-			else return 0;
-		} 
+	private class SongYearComparator implements Comparator<Song> {
+		// takes in 2 songs
+		public int compare(Song s1, Song s2) {
+			// returns 1 if s1 greater
+			if (s1.getYear() > s2.getYear()) {
+				return 1;
+			}
+			// returns -1 if s2 greater
+			else if (s1.getYear() < s2.getYear()) {
+				return -1;
+			}
+			return 0;
+		}
 	}
 
 	// Sort songs by length
-	public void sortSongsByLength()
-	{
-	 // Use Collections.sort()
-	 	Collections.sort(songs,new SongLengthComparator()); 
+	public void sortSongsByLength() {
+		// sorts songs in list by song length using collections.sort and song length
+		// comparator
+		Collections.sort(songs, new SongLengthComparator());
 	}
-  // Write a class SongLengthComparator that implements
+	// Write a class SongLengthComparator that implements
 	// the Comparator interface and compare two songs based on length
-	private class SongLengthComparator implements Comparator<Song>
-	{
-		public int compare(Song a,Song b){  //comparing to songs by length
-			if(a.getLength()>b.getLength()) return 1;
-			else if(a.getLength()<b.getLength()) return -1;
-			else return 0;
-		} 
+	private class SongLengthComparator implements Comparator<Song> {
+		// takes in 2 songs
+		public int compare(Song s1, Song s2) {
+			// returns 1 if s1 longer
+			if (s1.getLength() > s2.getLength()) {
+				return 1;
+			}
+			// returns -1 if s2 longer
+			else if (s1.getLength() < s2.getLength()) {
+				return -1;
+			}
+			return 0;
+		}
 	}
 
 	// Sort songs by title 
-	public void sortSongsByName()
+	public void sortSongsByName() 
 	{
-	  // Use Collections.sort()
-	  Collections.sort(songs);
+		// Use Collections.sort()
 		// class Song should implement the Comparable interface
 		// see class Song code
+		// sort songs
+		Collections.sort(songs);
 	}
 
-	
-	
+
 	/*
 	 * Play Content
 	 */
-	
+
 	// Play song from songs list
-	public void playSong(int index)
+	public void playSong(int index) 
 	{
-		if (index < 1 || index > songs.size()) //checking if the index is valid for songs arraylist
-		{
-			throw new NotFound("Song Not Found");  //if not then setting the errormsg and returning false 
+		if (index < 1 || index > songs.size()) {
+			// errorMsg = "Song Not Found";
+			// return false;
+			throw new contentDNE("this index");
 		}
-		songs.get(index-1).play();  //playing the song on the given index after coverting it to 0s indexing
+		songs.get(index - 1).play();
+
 	}
-	
+
 	// Play a chapter of an audio book from list of audiobooks
 	public void playAudioBook(int index, int chapter)
 	{
 		if (index < 1 || index > audiobooks.size())   //checking if the given index is valid 
 		{
-			throw new NotFound("Audiobook Not Found");
+			throw new contentDNE("this index");
 		}
 		audiobooks.get(index-1).selectChapter(chapter);   //otherwise setting the selectChapter with given chapter
 		audiobooks.get(index-1).play();  //playing the given chapter from the audiobook at the given index
@@ -231,118 +236,234 @@ public class Library
 	{
 		if (index < 1 || index > audiobooks.size())   //checking if the given index is valid 
 		{
-			throw new NotFound("Audiobook Not Found");
+			throw new contentDNE("this index");
 		}
 		audiobooks.get(index-1).printTOC();  //printing the chapter titles of the given audiobook
 	}
 	
+
   /*
    * Playlist Related Methods
    */
 	
 	// Make a new playlist and add to playlists array list
 	// Make sure a playlist with the same title doesn't already exist
-	public void makePlaylist(String title)
-	{
-		Playlist newPlaylist = new Playlist(title); //making new playlist
-		for(int i=0;i<playlists.size();i++){  //checking if the new playlist is already in the list of playlists
-			if(playlists.get(i).getTitle().equals(newPlaylist.getTitle())){
-				throw new AlreadyExists("Playlist "+title+" Already Exists");  //if true then setting the errormsg
+	public void makePlaylist(String title) {
+		for (int i = 0; i < playlists.size(); i++) {
+			if (playlists.get(i).getTitle().equals(title)) {
+				throw new PlaylistExists(playlists.get(i).getTitle());
 			}
 		}
-		playlists.add(newPlaylist); //otherwise adding new playlist to the playlist list
+		// creates playlist and adds to list
+		Playlist p = new Playlist(title);
+		playlists.add(p);
 	}
-	
-	// Print list of content information (songs, audiobooks etc) in playlist named title from list of playlists
-	public void printPlaylist(String title)
-	{
-		for(int i=0;i<playlists.size();i++){ //looping through playlists and finding the playlist with the given title 
-			if(playlists.get(i).getTitle().equals(title)){
-				playlists.get(i).printContents(); //if there is one playlist which matches then printing its contents
+
+	public void printPlaylist(String title) {
+		// boolean variable to check if playlist exists
+		Boolean check = false;
+		Playlist p = null;
+		// loop through playlists list
+		for (int i = 0; i < playlists.size(); i++) {
+			// if it finds the given title it exists
+			if (playlists.get(i).getTitle().equals(title)) {
+				// setting the found playlist
+				p = playlists.get(i);
+				// sets true since playlist was found
+				check = true;
+				// stops loop since playlist was found
+				break;
 			}
 		}
-		throw new NotFound("Playlist Not Found");  //if there are no matching playlists then setting the errormsg 
+		// if playlist does not exist, sett the error message
+		if (check == false) {
+			throw new contentDNE(title);
+		}
+		p.printContents();
+
 	}
-	
+
 	// Play all content in a playlist
-	public void playPlaylist(String playlistTitle)
-	{
-		for(int i=0;i<playlists.size();i++){  //looping through playlists and finding the playlist with the given title 
-			if(playlists.get(i).getTitle().equals(playlistTitle)){ 
-				playlists.get(i).playAll();  //if there is one playlist which matches then playing its contents
+	public void playPlaylist(String playlistTitle) {
+		// boolean variable to check if playlist exists
+		Boolean check = false;
+		Playlist p = null;
+		// loop through playlists list
+		for (int i = 0; i < playlists.size(); i++) {
+			// if it finds the given title it exists
+			if (playlists.get(i).getTitle().equals(playlistTitle)) {
+				// setting the found playlist
+				p = playlists.get(i);
+				// sets true since playlist was found
+				check = true;
+				// stops loop since playlist was found
+				break;
 			}
+
+		} // if playlist was not found, set error message and return false
+		if (check == false) {
+			throw new contentDNE(playlistTitle);
 		}
-		throw new NotFound("Playlist Not Found");
+		// call playAll method
+		p.playAll();
+
 	}
-	
+
 	// Play a specific song/audiobook in a playlist
-	public void playPlaylist(String playlistTitle, int indexInPL)
-	{
-		for(int i=0;i<playlists.size();i++){  //looping through playlists and finding the playlist with the given title
-			if(playlists.get(i).getTitle().equals(playlistTitle)){ 
-				playlists.get(i).play(indexInPL); //playing the content on the given index
+	public void playPlaylist(String playlistTitle, int indexInPL) {
+		// boolean variable to check if playlist exists
+		Boolean check = false;
+		Playlist p = null;
+		// loop through playlists list
+		for (int i = 0; i < playlists.size(); i++) {
+			// if it finds the given title it exists
+			if (playlists.get(i).getTitle().equals(playlistTitle)) {
+				// setting the found playlist
+				p = playlists.get(i);
+				// sets true since playlist was found
+				check = true;
+				// stops loop since playlist was found
+				break;
 			}
+
+		} // if playlist was not found, set error message and return false
+		if (check == false) {
+			throw new contentDNE(playlistTitle);
 		}
-		throw new NotFound("Playlist Not Found");
+		// checks for valid index
+		if (!p.contains(indexInPL)) {
+			throw new contentDNE("this index");
+		}
+		// calls play method
+		p.play(indexInPL - 1);
+
 	}
-	
+
 	// Add a song/audiobook/podcast from library lists at top to a playlist
 	// Use the type parameter and compare to Song.TYPENAME etc
 	// to determine which array list it comes from then use the given index
 	// for that list
-	public void addContentToPlaylist(String type, int index, String playlistTitle)
-	{
-		for(int i=0;i<playlists.size();i++){  //looping through playlists and finding the playlist with the given title
-			if(playlists.get(i).getTitle().equals(playlistTitle)){
-				//checking the type of the content and adding it to the correct playlist 
-				if(type.equalsIgnoreCase(Song.TYPENAME)){  
-					playlists.get(i).addContent(songs.get(index-1));
-				}
-				if(type.equalsIgnoreCase(AudioBook.TYPENAME)){
-					playlists.get(i).addContent(audiobooks.get(index-1));
-				}
+	public void addContentToPlaylist(String type, int index, String playlistTitle) {
+		// boolean variable to check if playlist exists
+		Boolean check = false;
+		Playlist p = null;
+		// loop through playlists list
+		for (int i = 0; i < playlists.size(); i++) {
+			// if it finds the given title it exists
+			if (playlists.get(i).getTitle().equals(playlistTitle)) {
+				// setting the found playlist
+				p = playlists.get(i);
+				// sets true since playlist was found
+				check = true;
+				// stops loop since playlist was found
+				break;
 			}
+		} // if playlist was not found, set error message and return false
+		if (check == false) {
+			throw new contentDNE(playlistTitle);
 		}
-		throw new NotFound("Playlist Not Found");
-	}
+		// adding content to the playlist based on type
 
-  // Delete a song/audiobook/podcast from a playlist with the given title
-	// Make sure the given index of the song/audiobook/podcast in the playlist is valid 
-	public void delContentFromPlaylist(int index, String title)
-	{
-		for(int i=0;i<playlists.size();i++){  //looping through playlists and finding the playlist with the given title
-			if(playlists.get(i).getTitle().equals(title)){
-				if (index < 1 || index > playlists.get(i).getContent().size()){  //checking if the given index is valid
-					throw new NotFound("Content Not Found"); //if the index is invalid then setting the errormsg 
-				}
-				playlists.get(i).deleteContent(index); //if the given index if valid then deleting the content from the given index
+		if (type.equalsIgnoreCase(Song.TYPENAME)) {
+			// checks for valid index input
+			if (index < 1 || index > songs.size()) {
+				throw new contentDNE("this index");
 			}
+			// adds song to playlist
+			p.addContent(songs.get(index - 1));
 		}
-		throw new NotFound("Playlist Not Found");
-	}
+		// same as above for audiobooks
+		else if (type.equalsIgnoreCase(AudioBook.TYPENAME)) {
+			if (index < 1 || index > audiobooks.size()) {
+				throw new contentDNE("this index");
+			}
 
-	public class AlreadyDownloaded extends RuntimeException{
-		public AlreadyDownloaded() {}
+			p.addContent(audiobooks.get(index - 1));
 
-		public AlreadyDownloaded(String message){
-			super(message);
-		}
-	}
-	
-	public class AlreadyExists extends RuntimeException{
-		public AlreadyExists() {}
-
-		public AlreadyExists(String message){
-			super(message);
+		} else {
+			throw new contentDNE(type);
 		}
 	}
 
-	public class NotFound extends RuntimeException{
-		public NotFound() {}
+	// Delete a song/audiobook/podcast from a playlist with the given title
+	// Make sure the given index of the song/audiobook/podcast in the playlist is
+	// valid
+	public void delContentFromPlaylist(int index, String title) {
+		// boolean variable to check if playlist exists
+		Boolean check = false;
+		Playlist p = null;
+		// loop through playlists list
+		for (int i = 0; i < playlists.size(); i++) {
+			// if it finds the given title it exists
+			if (playlists.get(i).getTitle().equals(title)) {
+				// setting the found playlist
+				p = playlists.get(i);
+				// sets true since playlist was found
+				check = true;
+				// stops loop since playlist was found
+				break;
+			}
+		} // if playlist was not found, set error message and return false
 
-		public NotFound(String message){
-			super(message);
+		if (check == false) {
+			throw new contentDNE(title);
 		}
+		// checks for valid index
+		if (!p.contains(index)) {
+			throw new contentDNE("this index");
+		}
+		p.deleteContent(index);
 	}
 }
 
+
+// creating error classes while extending RuntimeException
+
+//if song alreadydownloaded
+// creating error classes while extending RuntimeException
+
+//if song alreadydownloaded
+class SongAlreadyDownloaded extends RuntimeException 
+{
+	//takes in arg for the title to be used on the error message
+	public SongAlreadyDownloaded(String title) 
+	{
+		//creating message with super
+		super("Song " + title + " already downloaded");
+		
+	}
+}
+//same as above but for Audiobook
+class AudiobookAlreadyDownloaded extends RuntimeException 
+{
+	public AudiobookAlreadyDownloaded(String title) 
+	{
+
+		super("Audiobook " + title + " already downloaded");
+
+	}
+
+}
+//when content does not exist
+class contentDNE extends RuntimeException 
+{
+	// takes string to specify the issue
+	public contentDNE(String str) 
+	{
+
+		super("No matches for " + str);
+
+	}
+
+
+}
+// for when playlist has already been made
+class PlaylistExists extends RuntimeException 
+{
+	public PlaylistExists(String title) 
+	{
+
+		super("Playlist " + title + " already exists");
+
+	}
+}

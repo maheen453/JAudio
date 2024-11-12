@@ -2,6 +2,20 @@
 
 **A Java-based music application for managing songs, audiobooks, with features like library management, dynamic playlist creation, and audio content downloads.** The project emphasizes a strong foundation in object-oriented programming (OOP) principles: abstraction, inheritance, polymorphism, and encapsulation.
 
+## 🛠️ Object-Oriented Design
+### Key OOP Concepts
+
+- **Abstraction**:  
+  Abstract classes for media content provide a flexible framework, making it simple to extend the hierarchy.
+  - Example: `AudioContent` is an abstract class, and `Song`, `Audiobook`, and `Podcast` extend this to define specific behaviors.
+
+- **Inheritance and Polymorphism**:  
+  Unified behavior for `play` and `download` methods across different content types, with specialized functionality for each media type.
+  - Example: Methods like `play()` and `download()` are implemented in subclasses, ensuring different media content behaves accordingly.
+
+- **Encapsulation**:  
+  Data security ensured by using private fields with public methods for controlled access to audio content properties.
+  - Example: `AudioContent` stores fields like `title`, `artist`, and `genre` as private, providing public getters and setters for safe access.
 
 
 ## 📌 Features
@@ -81,17 +95,3 @@
 
 
 
-## 🛠️ Object-Oriented Design
-### Key OOP Concepts
-
-- **Abstraction**:  
-  Abstract classes for media content provide a flexible framework, making it simple to extend the hierarchy.
-  - Example: `AudioContent` is an abstract class, and `Song`, `Audiobook`, and `Podcast` extend this to define specific behaviors.
-
-- **Inheritance and Polymorphism**:  
-  Unified behavior for `play` and `download` methods across different content types, with specialized functionality for each media type.
-  - Example: Methods like `play()` and `download()` are implemented in subclasses, ensuring different media content behaves accordingly.
-
-- **Encapsulation**:  
-  Data security ensured by using private fields with public methods for controlled access to audio content properties.
-  - Example: `AudioContent` stores fields like `title`, `artist`, and `genre` as private, providing public getters and setters for safe access.
